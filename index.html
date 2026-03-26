@@ -407,7 +407,27 @@ if (!data.trades.length && !data.positions.length) {
     }
   });
   save();
-}
+// FORCE LOAD DATA (clean version)
+data = {
+  trades: [
+    { ticker: "IREN", net: 59000 },
+    { ticker: "APLD", net: 16000 },
+    { ticker: "SOFI", net: 18000 }
+  ],
+  positions: [
+    { shares: 0, ticker: "AMD" },
+    { shares: 0, ticker: "AMD" },
+    { shares: 1000, ticker: "APLD" },
+    { shares: 1000, ticker: "IREN" },
+    { shares: 3000, ticker: "SOFI" }
+  ],
+  account: {
+    schwab: 191928.66,
+    rh: 7144
+  }
+};
+
+save();
 render();
 </script>
 </body>
