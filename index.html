@@ -364,7 +364,30 @@ document.getElementById("clearBtn").addEventListener("click", () => {
   data = { trades: [], positions: [], account: {schwab:0, rh:0} };
   save();
 });
-
+if (!data.trades.length && !data.positions.length) {
+  data = {
+    trades: [
+      {ticker:"AMD", net:221, btc:462.66, sto:683.34, dateISO:new Date("2026-03-26").toISOString()},
+      {ticker:"AMD", net:215, btc:35.66, sto:250.34, dateISO:new Date("2026-03-26").toISOString()},
+      {ticker:"AMD", net:326, btc:208.66, sto:534.34, dateISO:new Date("2026-03-26").toISOString()},
+      {ticker:"IREN", net:597, btc:0, sto:597, dateISO:new Date("2026-03-19").toISOString()},
+      {ticker:"APLD", net:167, btc:96.62, sto:263.35, dateISO:new Date("2026-03-21").toISOString()},
+      {ticker:"SOFI", net:186, btc:46.99, sto:233, dateISO:new Date("2026-03-21").toISOString()}
+    ],
+    positions: [
+      {shares:0, ticker:"AMD", costBasis:210.29, qty:1, strike:212.5, cp:"P", premium:221, exp:"4/10"},
+      {shares:0, ticker:"AMD", costBasis:202.81, qty:1, strike:205, cp:"P", premium:215, exp:"4/2"},
+      {shares:1000, ticker:"IREN", costBasis:44.00, qty:10, strike:45, cp:"C", premium:597, exp:"4/2"},
+      {shares:1000, ticker:"APLD", costBasis:31.74, qty:10, strike:33.5, cp:"C", premium:167, exp:"4/2"},
+      {shares:3000, ticker:"SOFI", costBasis:23.35, qty:10, strike:19, cp:"C", premium:186, exp:"3/27"}
+    ],
+    account: {
+      schwab: 191928.66,
+      rh: 7144
+    }
+  };
+  save();
+}
 render();
 </script>
 </body>
