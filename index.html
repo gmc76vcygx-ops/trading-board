@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trading Board</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#111827;
+      --card2:#1f2937;
+      --line:#374151;
+      --text:#f3f4f6;
+      --muted:#9ca3af;
+      --blue:#60a5fa;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      padding:16px;
+    }
+    h1,h2{margin:0 0 12px}
+    .wrap{max-width:1150px;margin:0 auto}
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+      margin-bottom:14px;
+    }
+    .grid{display:grid;gap:12px}
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .stat{
+      background:var(--card2);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+    }
+    .label{font-size:12px;color:var(--muted);margin-bottom:6px}
+    .value{font-size:28px;font-weight:700}
+    .inputs{grid-template-columns:repeat(2,1fr)}
+    input,select,button{
+      width:100%;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:#0f172a;
+      color:var(--text);
+      font-size:16px;
+    }
+    button{
+      background:var(--blue);
+      border:none;
+      font-weight:700;
+    }
+    .subbtn{background:#334155}
+    .tablewrap{overflow:auto}
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:14px;
+    }
+    th,td{
+      border-bottom:1px solid var(--line);
+      padding:10px 6px;
+      text-align:left;
+      vertical-align:top;
+      white-space:nowrap;
+    }
+    th{color:var(--muted);font-size:12px}
+    .tickerRow{
+      padding:8px 0;
+      border-bottom:1px solid var(--line);
+    }
+    .helper{
+      background:#0f172a;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      white-space:pre-wrap;
+      line-height:1.4;
+    }
+    @media (min-width:760px){
+      .stats{grid-template-columns:repeat(5,1fr)}
+      .inputs{grid-template-columns:repeat(4,1fr)}
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Trading Board</h1>
+    <div class="grid stats">
+      <div class="stat"><div class="label">This Week</div><div class="value" id="weekTotal">$0</div></div>
+      <div class="stat"><div class="label">March Total</div><div class="value" id="marchTotal">$0</div></div>
+      <div class="stat"><div class="label">2026 Total</div><div class="value" id="yearTotal">$0</div></div>
+      <div class="stat"><div class="label">Goal ($10K)</div><div class="value" id="goalPct">0%</div></div>
+      <div class="stat"><div class="label">ROC</div><div class="value" id="rocValue">0.0%</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Add Trade</h2>
+    <div class="grid inputs">
+      <div><div class="label">Date</div><input id="tDate" placeholder="3/26/2026"></div>
+      <div><div class="label">Ticker</div><input id="tTicker" placeholder="AMD"></div>
+      <div><div class="label">Shares</div><input id="tShares" type="number" placeholder="0"></div>
+      <div><div class="label">Cost Basis</div><input id="tCostBasis" type="number" step="0.01" placeholder="210.29"></div>
+
+      <div><div class="label">Opt Qty</div><input id="tQty" type="number" placeholder="1"></div>
+      <div><div class="label">Strike</div><input id="tStrike" type="number" step="0.01" placeholder="212.5"></div>
+      <div><div class="label">C / P</div><select id="tCP"><option value="C">Call</option><option value="P">Put</option></select></div>
+      <div><div class="label">Expiration</div><input id="tExp" placeholder="4/10"></div>
+
+      <div><div class="label">BTC</div><input id="tBTC" type="number" step="0.01" placeholder="462.66"></div>
+      <div><div class="label">STO</div><input id="tSTO" type="number" step="0.01" placeholder="683.34"></div>
+      <div><div class="label">Schwab Value</div><input id="schwabValue" type="number" step="0.01" placeholder="191928.66"></div>
+      <div><div class="label">Robinhood Value</div><input id="rhValue" type="number" step="0.01" placeholder="7144"></div>
+    </div>
+    <div class="grid inputs" style="margin-top:8px;">
+      <button id="addTradeBtn">Add Trade</button>
+      <button class="subbtn" id="loadMyBoardBtn" type="button">Load My Board</button>
+      <button class="subbtn" id="clearBtn" type="button">Clear All</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Board</h2>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Shares</th>
+            <th>Ticker</th>
+            <th>Cost Basis</th>
+            <th>Opt Qty</th>
+            <th>Strike</th>
+            <th>Premium</th>
+            <th>Exp</th>
+            <th>50%</th>
+            <th>Effective Cost</th>
+          </tr>
+        </thead>
+        <tbody id="boardBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Premium by Ticker</h2>
+    <div id="tickerTotals"></div>
+  </div>
+
+  <div class="card">
+    <h2>Moomoo Alert Helper</h2>
+    <div class="label">Select Position</div>
+    <select id="alertSelect"></select>
+    <div class="helper" id="alertBox" style="margin-top:10px;">Select a position.</div>
+  </div>
+</div>
+
+<script>
+const KEY = "trading_board_v6";
+
+let data = JSON.parse(localStorage.getItem(KEY) || '{"trades":[],"positions":[],"account":{"schwab":0,"rh":0},"baseline":{"march":0,"year":0}}');
+
+function save(){
+  localStorage.setItem(KEY, JSON.stringify(data));
+  render();
+}
+
+function round(n){ return Math.round(Number(n || 0)); }
+function money(n){ return "$" + round(n).toLocaleString(); }
+function pct(n){ return Number(n || 0).toFixed(1) + "%"; }
+
+function currentWeekRange(){
+  const now = new Date();
+  const day = now.getDay();
+  const diff = (day === 0 ? -6 : 1 - day);
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diff);
+  monday.setHours(0,0,0,0);
+  return monday;
+}
+
+function effectiveCost(pos){
+  if(pos.cp !== "P") return "";
+  return (Number(pos.strike) - (Number(pos.premium)/100)).toFixed(2);
+}
+
+function alertData(pos){
+  const strike = Number(pos.strike || 0);
+  const half = (Number(pos.premium || 0) / 100 / 2).toFixed(2);
+  return {
+    condition: pos.cp === "C" ? "Falls below (≤)" : "Rises above (≥)",
+    price: (strike - 1.50).toFixed(2),
+    remarks: `50% ≈ ${half} → check roll`
+  };
+}
+
+function render(){
+  const weekStart = currentWeekRange();
+  let week = 0;
+  let month = Number(data.baseline?.march || 0);
+  let year = Number(data.baseline?.year || 0);
+  const perTicker = {};
+
+  data.trades.forEach(t => {
+    const d = new Date(t.dateISO);
+    const net = Number(t.net || 0);
+    if(d >= weekStart) week += net;
+    if(d.getMonth() === 2 && d.getFullYear() === 2026) month += net;
+    if(d.getFullYear() === 2026) year += net;
+    perTicker[t.ticker] = (perTicker[t.ticker] || 0) + net;
+  });
+
+  const accountValue = Number(data.account.schwab || 0) + Number(data.account.rh || 0);
+  const roc = accountValue ? (year / accountValue) * 100 : 0;
+
+  document.getElementById("weekTotal").textContent = money(week);
+  document.getElementById("marchTotal").textContent = money(month);
+  document.getElementById("yearTotal").textContent = money(year);
+  document.getElementById("goalPct").textContent = Math.round((month / 10000) * 100) + "%";
+  document.getElementById("rocValue").textContent = pct(roc);
+
+  const boardBody = document.getElementById("boardBody");
+  boardBody.innerHTML = "";
+  data.positions.forEach(pos => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${pos.shares}</td>
+      <td><strong>${pos.ticker}</strong></td>
+      <td>${pos.costBasis ? Number(pos.costBasis).toFixed(2) : "—"}</td>
+      <td>${pos.qty}</td>
+      <td>${Number(pos.strike).toFixed(pos.strike % 1 ? 1 : 0)}${pos.cp}</td>
+      <td>${round(pos.premium)}</td>
+      <td>${pos.exp}</td>
+      <td>${round(pos.premium / 2)}</td>
+      <td>${effectiveCost(pos) || "—"}</td>
+    `;
+    boardBody.appendChild(tr);
+  });
+
+  const tickerTotals = document.getElementById("tickerTotals");
+  tickerTotals.innerHTML = "";
+  Object.keys(perTicker).sort().forEach(t => {
+    const row = document.createElement("div");
+    row.className = "tickerRow";
+    row.textContent = `${t}: ${money(perTicker[t])}`;
+    tickerTotals.appendChild(row);
+  });
+
+  const alertSelect = document.getElementById("alertSelect");
+  alertSelect.innerHTML = '<option value="">Select position</option>';
+  data.positions.forEach((p, i) => {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = `${p.ticker} ${p.strike}${p.cp} ${p.exp}`;
+    alertSelect.appendChild(opt);
+  });
+  updateAlertBox();
+}
+
+function updateAlertBox(){
+  const idx = document.getElementById("alertSelect").value;
+  const box = document.getElementById("alertBox");
+  if(idx === ""){
+    box.textContent = "Select a position.";
+    return;
+  }
+  const pos = data.positions[idx];
+  const a = alertData(pos);
+  box.textContent =
+`Board:
+${pos.shares} | ${pos.ticker} | ${pos.costBasis ? Number(pos.costBasis).toFixed(2) : "—"} | ${pos.qty} | ${Number(pos.strike).toFixed(pos.strike % 1 ? 1 : 0)}${pos.cp} | ${round(pos.premium)} | ${pos.exp} | ${round(pos.premium/2)}
+
+Moomoo Alert:
+Condition: ${a.condition}
+Price: ${a.price}
+Remarks: ${a.remarks}`;
+}
+
+document.getElementById("alertSelect").addEventListener("change", updateAlertBox);
+
+document.getElementById("addTradeBtn").addEventListener("click", () => {
+  const ticker = document.getElementById("tTicker").value.trim().toUpperCase();
+  const shares = Number(document.getElementById("tShares").value || 0);
+  const costBasis = Number(document.getElementById("tCostBasis").value || 0);
+  const qty = Number(document.getElementById("tQty").value || 0);
+  const strike = Number(document.getElementById("tStrike").value || 0);
+  const cp = document.getElementById("tCP").value;
+  const exp = document.getElementById("tExp").value.trim();
+  const btc = Number(document.getElementById("tBTC").value || 0);
+  const sto = Number(document.getElementById("tSTO").value || 0);
+  const net = sto - btc;
+
+  if(!ticker || !qty || !strike || !exp){
+    alert("Fill in ticker, qty, strike, and expiration.");
+    return;
+  }
+
+  const dateText = document.getElementById("tDate").value.trim();
+  const dateISO = dateText ? new Date(dateText).toISOString() : new Date().toISOString();
+
+  data.trades.unshift({ ticker, net, btc, sto, dateISO });
+
+  const pos = { shares, ticker, costBasis, qty, strike, cp, premium: round(net), exp };
+  const idx = data.positions.findIndex(p => p.ticker===ticker && p.strike===strike && p.cp===cp && p.exp===exp);
+  if(idx >= 0) data.positions[idx] = pos;
+  else data.positions.unshift(pos);
+
+  data.account.schwab = Number(document.getElementById("schwabValue").value || data.account.schwab || 0);
+  data.account.rh = Number(document.getElementById("rhValue").value || data.account.rh || 0);
+
+  save();
+});
+
+document.getElementById("loadMyBoardBtn").addEventListener("click", () => {
+  data = {
+    baseline: {
+      march: 8215,
+      year: 41345
+    },
+    trades: [
+      {ticker:"AMD", net:221, btc:462.66, sto:683.34, dateISO:new Date("2026-03-27").toISOString()},
+      {ticker:"AMD", net:215, btc:35.66, sto:250.34, dateISO:new Date("2026-03-27").toISOString()}
+    ],
+    positions: [
+      {shares:3000, ticker:"SOFI", costBasis:23.35, qty:30, strike:23.5, cp:"C", premium:0, exp:"expired"},
+      {shares:1000, ticker:"APLD", costBasis:31.74, qty:10, strike:33.5, cp:"C", premium:167, exp:"4/2"},
+      {shares:1000, ticker:"IREN", costBasis:44.00, qty:10, strike:45, cp:"C", premium:597, exp:"4/2"},
+      {shares:1000, ticker:"SOFI", costBasis:23.35, qty:10, strike:19, cp:"C", premium:186, exp:"3/27"},
+      {shares:0, ticker:"AMD", costBasis:210.29, qty:1, strike:212.5, cp:"P", premium:221, exp:"4/10"},
+      {shares:200, ticker:"IONQ", costBasis:42.57, qty:2, strike:38.5, cp:"C", premium:48, exp:"3/27"},
+      {shares:100, ticker:"UBER", costBasis:0, qty:1, strike:80, cp:"C", premium:113, exp:"4/2"},
+      {shares:0, ticker:"IREN", costBasis:0, qty:1, strike:43.5, cp:"P", premium:207, exp:"3/27"},
+      {shares:0, ticker:"IREN", costBasis:0, qty:1, strike:40, cp:"P", premium:194, exp:"3/27"},
+      {shares:0, ticker:"AMD", costBasis:202.81, qty:1, strike:205, cp:"P", premium:215, exp:"4/2"},
+      {shares:0, ticker:"SOFI", costBasis:0, qty:1, strike:17, cp:"P", premium:85, exp:"4/4"}
+    ],
+    account: {
+      schwab: 191928.66,
+      rh: 7144
+    }
+  };
+  save();
+});
+
+document.getElementById("clearBtn").addEventListener("click", () => {
+  if(!confirm("Clear all data?")) return;
+  data = { trades: [], positions: [], account: {schwab:0, rh:0}, baseline:{march:0, year:0} };
+  save();
+});
+
+render();
+</script>
+</body>
+</html>
