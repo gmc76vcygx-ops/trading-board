@@ -427,11 +427,6 @@ document.getElementById("loadMyBoardBtn").addEventListener("click", () => {
   save();
 });
 
-document.getElementById("clearBtn").addEventListener("click", () => {
-  if(!confirm("Clear all data?")) return;
-  data = { trades: [], positions: [], account: {schwab:0, rh:0}, baseline:{march:0, year:0}, prices:{} };
-  save();
-});
 
 render();
 </script>
